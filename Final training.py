@@ -1,7 +1,5 @@
 
-# Final trainning
-
-# Adding subset 8
+# trainning random forest
 
 import pandas as pd
 import numpy as np
