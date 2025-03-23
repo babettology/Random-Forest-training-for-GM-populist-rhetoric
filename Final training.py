@@ -45,7 +45,7 @@ X_train, y_train = smote.fit_resample(X_train, y_train)
 
 # -------------------- Train Random Forest Model --------------------
 
-# Hyperparameter tuning using RandomizedSearchCV
+# Hyperparameter tuning 
 param_grid = {
     'n_estimators': [100, 200, 500],
     'max_depth': [10, 20, None],
@@ -58,46 +58,44 @@ rf = RandomForestClassifier(random_state=42, class_weight="balanced")
 rf_random = RandomizedSearchCV(rf, param_grid, n_iter=10, cv=3, verbose=2, n_jobs=-1)
 rf_random.fit(X_train, y_train)
 
-# Train with best parameters from RandomizedSearchCV
+# Train with best parameters 
 best_rf = rf_random.best_estimator_
 best_rf.fit(X_train, y_train)
 
 # -------------------- Cross-Validation Scores --------------------
-# Cross-validation to get the model performance scores
+# Cross-validation 
 cross_val_scores = cross_val_score(best_rf, X_train, y_train, cv=5)
 
-# Output cross-validation scores
+# Output 
 print(f"Cross-validation scores: {cross_val_scores}")
 print(f"Mean Cross-validation score: {np.mean(cross_val_scores)}")
 print(f"Standard Deviation of Cross-validation scores: {np.std(cross_val_scores)}")
 
 # -------------------- Validation and test set --------------------
 
-# Evaluate on validation set
+# validation set
 y_val_pred = best_rf.predict(X_val)
 print("Validation Accuracy:", accuracy_score(y_val, y_val_pred))
 print("Validation Report:\n", classification_report(y_val, y_val_pred))
 
-# Evaluate on test set
+# test set
 y_test_pred = best_rf.predict(X_test)
 print("Test Accuracy:", accuracy_score(y_test, y_test_pred))
 print("Test Report:\n", classification_report(y_test, y_test_pred))
 
 # -------------------- Load and Preprocess Unseen Data --------------------
 
-# Load JSON file
 df_unseen = pd.read_csv(file_path_unseen)
 
-# Convert vector column to list format
+# Convert vector 
 df_unseen['vector'] = df_unseen['vector'].apply(lambda x: ast.literal_eval(str(x)) if isinstance(x, str) else x)
 
-# Pad unseen data to match training data dimensions
+# Pad unseen data 
 X_unseen = pad_vectors(df_unseen['vector'].tolist(), max_length=55)
 X_unseen = scaler.transform(X_unseen)  # Normalize
 
-# Predict labels for unseen data
+# Predict labels 
 df_unseen['predicted_label'] = best_rf.predict(X_unseen)
 
-# Save predictions to CSV
 df_unseen.to_csv(output_file_path, index=False)
 print("Predictions saved to:", output_file_path)
